@@ -5,6 +5,7 @@
 
 #include "RenderWindow.hpp"
 #include "Entity.hpp"
+#include "Utils.hpp"
 
 int main(int argc, char* args[]) 
 {
@@ -35,13 +36,30 @@ int main(int argc, char* args[])
 
     SDL_Event event;
 
+    const float timeStep = 0.01f;
+    float accumulator = 0.0f;
+    float currentTime = utils::hireTimeInSeconds();
+
     while (gameRunning) 
     {
-        while (SDL_PollEvent(&event)) 
+        int startTicks = SDL_GetTicks();
+        float newTime = utils::hireTimeInSeconds();
+        float frameTime = newTime - currentTime;
+        currentTime = newTime;
+        accumulator += frameTime;
+
+        while (accumulator >= timeStep)
         {
-            if (event.type == SDL_QUIT) 
-                gameRunning = false;
+            while (SDL_PollEvent(&event)) 
+            {
+                if (event.type == SDL_QUIT) 
+                    gameRunning = false;
+            }
+
+            accumulator -= timeStep;
+
         }
+        
 
         window.clear();
         
@@ -50,7 +68,14 @@ int main(int argc, char* args[])
             window.render(e);
         }
 
+        std::cout << utils::hireTimeInSeconds() << std::endl;
+
         window.display();
+
+        int frameTicks = SDL_GetTicks() - startTicks;
+
+        if (frameTicks < 1000 / window.getRefreshRate())
+            SDL_Delay(window.getRefreshRate() - frameTicks);
     }
 
     window.cleanUp();
