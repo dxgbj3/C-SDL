@@ -6,6 +6,7 @@
 #include "RenderWindow.hpp"
 #include "Entity.hpp"
 #include "Utils.hpp"
+#include "Player.hpp"
 
 int main(int argc, char* args[]) 
 {
@@ -32,6 +33,9 @@ int main(int argc, char* args[])
         
         entities.push_back(texture1);
     }
+
+    Player player(Vector2f(100, 50), grassTexture);
+
     bool gameRunning = true;
 
     SDL_Event event;
@@ -56,6 +60,7 @@ int main(int argc, char* args[])
                     gameRunning = false;
             }
 
+            player.update(timeStep);
             accumulator -= timeStep;
 
         }
@@ -63,19 +68,24 @@ int main(int argc, char* args[])
 
         window.clear();
         
+        /*
         for (Entity& e : entities)
         {
             window.render(e);
         }
+        */
+
+        window.render(player);
 
         std::cout << utils::hireTimeInSeconds() << std::endl;
 
         window.display();
 
         int frameTicks = SDL_GetTicks() - startTicks;
+        int targetFrameTime = 1000 / window.getRefreshRate();
 
-        if (frameTicks < 1000 / window.getRefreshRate())
-            SDL_Delay(window.getRefreshRate() - frameTicks);
+        if (frameTicks < targetFrameTime)
+            SDL_Delay(targetFrameTime - frameTicks);
     }
 
     window.cleanUp();
